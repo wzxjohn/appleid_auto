@@ -28,8 +28,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            unblocker:
+              - 'unblocker/**'
+            backend:
+              - 'backend/**'
+
       - name: Build and push Docker images (Worker)
         uses: docker/build-push-action@v5
+        if: steps.changes.outputs.unblocker == 'true'
         with:
           context: ./unblocker
           push: true
@@ -37,6 +47,7 @@ jobs:
 
       - name: Build and push Docker images (Manager)
         uses: docker/build-push-action@v5
+        if: steps.changes.outputs.backend == 'true'
         with:
           context: ./backend
           push: true
